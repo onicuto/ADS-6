@@ -1,66 +1,68 @@
 // Copyright 2022 NNTU-CS
-#ifndef TPQUEUE_H
-#define TPQUEUE_H
+#ifndef INCLUDE_TPQUEUE_H_
+#define INCLUDE_TPQUEUE_H_
 
-#include <cstddef>
+template <typename T>
+class TPQueue {
+ private:
+    struct Node {
+        T data;
+        Node* next;
 
-template <typename T> class TPQueue {
-private:
-  struct Node {
-    T data;
-    Node *next;
+        explicit Node(const T& d) : data(d), next(nullptr) {}
+    };
 
-    Node(const T &d) : data(d), next(nullptr) {}
-  };
+    Node* head;
 
-  Node *head;
+ public:
+    TPQueue() : head(nullptr) {}
 
-public:
-  TPQueue() : head(nullptr) {}
-
-  ~TPQueue() {
-    while (head) {
-      Node *temp = head;
-      head = head->next;
-      delete temp;
-    }
-  }
-
-  TPQueue(const TPQueue &) = delete;
-  TPQueue &operator=(const TPQueue &) = delete;
-
-  void push(const T &item) {
-    Node *newNode = new Node(item);
-
-    if (!head || item.prior > head->data.prior) {
-      newNode->next = head;
-      head = newNode;
-      return;
+    ~TPQueue() {
+        while (head) {
+            Node* temp = head;
+            head = head->next;
+            delete temp;
+        }
     }
 
-    Node *current = head;
-    while (current->next && current->next->data.prior >= item.prior) {
-      current = current->next;
+    // Запрещаем копирование
+    TPQueue(const TPQueue&) = delete;
+    TPQueue& operator=(const TPQueue&) = delete;
+
+    void push(const T& item) {
+        Node* newNode = new Node(item);
+
+        if (!head || item.prior > head->data.prior) {
+            newNode->next = head;
+            head = newNode;
+            return;
+        }
+
+        Node* current = head;
+        while (current->next && current->next->data.prior >= item.prior) {
+            current = current->next;
+        }
+
+        newNode->next = current->next;
+        current->next = newNode;
     }
 
-    newNode->next = current->next;
-    current->next = newNode;
-  }
+    T pop() {
+        if (!head) {
+            return T{};  // или можно бросить исключение
+        }
 
-  T pop() {
-    if (!head) {
-      return T{};
+        Node* temp = head;
+        T result = head->data;
+        head = head->next;
+        delete temp;
+
+        return result;
     }
 
-    Node *temp = head;
-    T result = head->data;
-    head = head->next;
-    delete temp;
-
-    return result;
-  }
-
-  bool empty() const { return head == nullptr; }
+    bool empty() const {
+        return head == nullptr;
+    }
 };
 
-#endif // TPQUEUE_H
+#endif  // INCLUDE_TPQUEUE_H_
